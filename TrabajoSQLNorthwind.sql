@@ -1,7 +1,9 @@
 USE Northwind
 GO
+
 /*Realizar el CRUD de cada tabla dentro de las secciones correcpondientes*/
 -----------------------------------Sección Employees-----------------------------------------------
+
 
 DROP PROC IF EXISTS sp_Update_Employees
 GO
@@ -114,7 +116,7 @@ as
 	END
 	BEGIN TRAN
 		BEGIN TRY
-			SET @Mensaje = 'El registro se actualizó correctamente.'
+			SET @Mensaje = 'El registro se actualizÃ³ correctamente.'
 			UPDATE Employees SET
 			[LastName] = @LastName,
 			[FirstName] = @FirstName,
@@ -140,13 +142,21 @@ as
 		END TRY
 		BEGIN CATCH
 			ROLLBACK TRAN
-			SET @Mensaje = 'Error en la transacción : '
+			SET @Mensaje = 'Error en la transacciÃ³n : '
 			PRINT @Mensaje
 			SELECT ERROR_MESSAGE() as ErrorMenssage
 		END CATCH
 
 GO
 
+DROP PROC IF EXISTS sp_delete_employees
+go
+/*CORREGIR ELIMINACION EN CASCADA EMPLOYEES CON EMPLOYEETERRITORIES*/
+create proc sp_delete_employees
+@EmployeeID int
+as
+	Delete from Employees where EmployeeID = @EmployeeID;
+go
 
 -----------------------------------Sección Orders-----------------------------------------------
 -----------------------------------Sección Shippers-----------------------------------------------
