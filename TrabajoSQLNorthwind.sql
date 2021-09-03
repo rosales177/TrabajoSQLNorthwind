@@ -153,6 +153,9 @@ go
 
 
 -----------------------------------Sección Fiorella-----------------------------------------------
+-----INSERT----
+INSERT INTO Employees VALUES ('01', 'RAMIREZ', 'ANDREA');
+INSERT INTO Employees VALUES ('02', 'RAMIREZ', 'ANDRES');
 
 -----------------------------------Sección Juan Carlos-----------------------------------------------
 
