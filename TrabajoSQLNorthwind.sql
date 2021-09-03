@@ -1,8 +1,7 @@
 USE Northwind
 GO
-
------------------------------------Sección Rosales-----------------------------------------------
-
+/*Realizar el CRUD de cada tabla dentro de las secciones correcpondientes*/
+-----------------------------------Sección Employees-----------------------------------------------
 
 DROP PROC IF EXISTS sp_Update_Employees
 GO
@@ -148,15 +147,18 @@ as
 
 GO
 
-EXEC sp_Update_Employees 9,'Dodsworth','Annie','Sales Representative','Ms.','1966-01-27','2000-11-15','7 Houndstooth Rd','London','WA','WG2 7LT','UK','(71)555-4443','4555555',null,'Anne has a BA degree in English from St. Lawrence College.  She is fluent in French and German.',5,null
-go
 
+-----------------------------------Sección Orders-----------------------------------------------
+-----------------------------------Sección Shippers-----------------------------------------------
+-----------------------------------Sección EmployeeTerritories-----------------------------------------------
+-----------------------------------Sección Customers-----------------------------------------------
+-----------------------------------Sección CustomerCustomerDemo-----------------------------------------------
+-----------------------------------Sección CustomerDemographic-----------------------------------------------
+-----------------------------------Sección Suppliers-----------------------------------------------
+-----------------------------------Sección Territories-----------------------------------------------
+-----------------------------------Sección Regions-----------------------------------------------
+-----------------------------------Sección Products-----------------------------------------------
+-----------------------------------Sección Categories-----------------------------------------------
+-----------------------------------Sección OrderDetails-----------------------------------------------
 
------------------------------------Sección Fiorella-----------------------------------------------
------INSERT----
-INSERT INTO Employees VALUES ('01', 'RAMIREZ', 'ANDREA');
-INSERT INTO Employees VALUES ('02', 'RAMIREZ', 'ANDRES');
-
------------------------------------Sección Juan Carlos-----------------------------------------------
-
------------------------------------Sección Yeimi-----------------------------------------------
+/*Realizar el CRUD de cada tabla dentro de las secciones correcpondientes*/
