@@ -1,7 +1,7 @@
 USE Northwind
 GO
 
------------------------------------Sección Rosales-----------------------------------------------
+-----------------------------------SecciÃ³n Rosales-----------------------------------------------
 
 
 DROP PROC IF EXISTS sp_Update_Employees
@@ -115,7 +115,7 @@ as
 	END
 	BEGIN TRAN
 		BEGIN TRY
-			SET @Mensaje = 'El registro se actualizó correctamente.'
+			SET @Mensaje = 'El registro se actualizÃ³ correctamente.'
 			UPDATE Employees SET
 			[LastName] = @LastName,
 			[FirstName] = @FirstName,
@@ -141,7 +141,7 @@ as
 		END TRY
 		BEGIN CATCH
 			ROLLBACK TRAN
-			SET @Mensaje = 'Error en la transacción : '
+			SET @Mensaje = 'Error en la transacciÃ³n : '
 			PRINT @Mensaje
 			SELECT ERROR_MESSAGE() as ErrorMenssage
 		END CATCH
@@ -152,7 +152,7 @@ EXEC sp_Update_Employees 9,'Dodsworth','Annie','Sales Representative','Ms.','196
 go
 
 
------------------------------------Sección Fiorella-----------------------------------------------
+-----------------------------------SecciÃ³n Fiorella-----------------------------------------------
 -----INSERT----
 
 DROP PROC IF EXISTS sp_Insert_Employees
@@ -179,6 +179,31 @@ GO
 INSERT INTO Employees VALUES ('01', 'RAMIREZ', 'ANDREA', ' ', ' ', ' ');
 INSERT INTO Employees VALUES ('02', 'RAMIREZ', 'ANDRES', ' ', ' ', ' ');
 INSERT INTO Employees VALUES ('03', 'SANCHEZ', 'CLAUDIO', ' ', ' ', ' ');
------------------------------------Sección Juan Carlos-----------------------------------------------
+-----------------------------------SecciÃ³n Juan Carlos-----------------------------------------------
+DROP PROC IF EXISTS sp_delete_employees
+go
+create proc sp_delete_employees
+@EmployeeID int not null ,
+@LastName nvarchar(20) not null,
+@FirstName nvarchar(10) not null,
+@Title nvarchar(10) null,
+@TitleOfCourtesy nvarchar(25) null,
+@BirthDate datetime null,
+@HireDate datetime null,
+@Address nvarchar(15) null,
+@City nvarchar(15) null,
+@Region nvarchar(15) null,
+@PostalCode nvarchar(10) null,
+@Country nvarchar(15) null,
+@HomePhone nvarchar(24) null,
+@Extension nvarchar(4) null,
+@Photo image null,
+@Notes ntext null,
+@ReportsTo int null,
+@PhotoPath nvarchar(255) null
+as
+	Delete from Employees where EmployeeID = @EmployeeID;
+go
 
------------------------------------Sección Yeimi-----------------------------------------------
+exec sp_delete_employees '002';
+-----------------------------------SecciÃ³n Yeimi-----------------------------------------------
