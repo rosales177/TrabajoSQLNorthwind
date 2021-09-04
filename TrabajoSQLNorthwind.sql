@@ -2,9 +2,121 @@ USE Northwind
 GO
 
 /*Realizar el CRUD de cada tabla dentro de las secciones correcpondientes*/
+
+/*Restricciones delete  cascade*/
+
+ALTER TABLE CustomerCustomerDemo
+DROP CONSTRAINT IF EXISTS Fk_CustomerCustomerDemo_CustomerDemographics_Cascade_Delete
+GO
+ALTER TABLE CustomerCustomerDemo
+ADD CONSTRAINT Fk_CustomerCustomerDemo_CustomerDemographics_Cascade_Delete FOREIGN KEY (CustomerTypeID)
+REFERENCES CustomerDemographics (CustomerTypeID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE CustomerCustomerDemo
+DROP CONSTRAINT IF EXISTS Fk_CustomerCustomerDemo_Customers_Cascade_Delete
+GO
+ALTER TABLE CustomerCustomerDemo
+ADD CONSTRAINT Fk_CustomerCustomerDemo_Customers_Cascade_Delete FOREIGN KEY (CustomerID)
+REFERENCES Customers (CustomerID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE Orders
+DROP CONSTRAINT IF EXISTS Fk_Orders_Customers_Cascade_Delete
+GO
+ALTER TABLE Orders
+ADD CONSTRAINT Fk_Orders_Customer_Cascade_Delete FOREIGN KEY (CustomerID)
+REFERENCES Customers (CustomerID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE Orders
+DROP CONSTRAINT IF EXISTS Fk_Orders_Shippers_Cascade_Delete
+GO
+ALTER TABLE Orders
+ADD CONSTRAINT Fk_Orders_Shippers_Cascade_Delete FOREIGN KEY (ShipVia)
+REFERENCES Shippers (ShipperID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE Orders
+DROP CONSTRAINT IF EXISTS Fk_Orders_Employees_Cascade_Delete
+GO
+ALTER TABLE Orders
+ADD CONSTRAINT Fk_Orders_Employees_Cascade_Delete FOREIGN KEY (EmployeeID)
+REFERENCES Employees (EmployeeID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE EmployeeTerritories
+DROP CONSTRAINT IF EXISTS Fk_EmployeeTerritories_Employees_Cascade_Delete
+GO
+ALTER TABLE EmployeeTerritories
+ADD CONSTRAINT Fk_EmployeeTerritories_Employees_Cascade_Delete FOREIGN KEY (EmployeeID)
+REFERENCES Employees (EmployeeID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE EmployeeTerritories
+DROP CONSTRAINT IF EXISTS Fk_EmployeeTerritories_Territories_Cascade_Delete
+GO
+ALTER TABLE EmployeeTerritories
+ADD CONSTRAINT Fk_EmployeeTerritories_Territories_Cascade_Delete FOREIGN KEY (TerritoryID)
+REFERENCES Territories (TerritoryID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE Territories
+DROP CONSTRAINT IF EXISTS Fk_Territories_Region_Cascade_Delete
+GO
+ALTER TABLE Territories
+ADD CONSTRAINT Fk_Territories_Region_Cascade_Delete FOREIGN KEY (RegionID)
+REFERENCES Region (RegionID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE Products 
+DROP CONSTRAINT IF EXISTS Fk_Products_Suppliers_Cascade_Delete
+GO
+ALTER TABLE Products
+ADD CONSTRAINT Fk_Products_Suppliers_Cascade_Delete FOREIGN KEY (SupplierID)
+REFERENCES Suppliers (SupplierID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE Products 
+DROP CONSTRAINT IF EXISTS Fk_Products_Categories_Cascade_Delete
+GO
+ALTER TABLE Products
+ADD CONSTRAINT Fk_Products_Categories_Cascade_Delete FOREIGN KEY (CategoryID)
+REFERENCES Categories (CategoryID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [Order Details]
+DROP CONSTRAINT IF EXISTS Fk_OrderDetails_Products_Cascade_Delete
+GO
+ALTER TABLE [Order Details]
+ADD CONSTRAINT Fk_OrderDetails_Products_Cascade_Delete FOREIGN KEY (ProductID)
+REFERENCES Products (ProductID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [Order Details]
+DROP CONSTRAINT IF EXISTS Fk_OrderDetails_Orders_Cascade_Delete
+GO
+ALTER TABLE [Order Details]
+ADD CONSTRAINT Fk_OrderDetails_Orders_Cascade_Delete FOREIGN KEY (OrderID)
+REFERENCES Orders (OrderID)
+ON DELETE CASCADE
+GO
+
+
+
+
 -----------------------------------Sección Employees-----------------------------------------------
-
-
 DROP PROC IF EXISTS sp_Update_Employees
 GO
 
@@ -151,12 +263,13 @@ GO
 
 DROP PROC IF EXISTS sp_delete_employees
 go
-/*CORREGIR ELIMINACION EN CASCADA EMPLOYEES CON EMPLOYEETERRITORIES*/
 create proc sp_delete_employees
 @EmployeeID int
 as
 	Delete from Employees where EmployeeID = @EmployeeID;
 go
+
+EXEC sp_delete_employees 9
 
 -----------------------------------Sección Orders-----------------------------------------------
 -----------------------------------Sección Shippers-----------------------------------------------
@@ -172,3 +285,4 @@ go
 -----------------------------------Sección OrderDetails-----------------------------------------------
 
 /*Realizar el CRUD de cada tabla dentro de las secciones correcpondientes*/
+
