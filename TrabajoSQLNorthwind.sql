@@ -24,7 +24,7 @@ ON DELETE CASCADE
 GO
 
 ALTER TABLE Orders
-DROP CONSTRAINT IF EXISTS Fk_Orders_Customers_Cascade_Delete
+DROP CONSTRAINT IF EXISTS Fk_Orders_Customer_Cascade_Delete
 GO
 ALTER TABLE Orders
 ADD CONSTRAINT Fk_Orders_Customer_Cascade_Delete FOREIGN KEY (CustomerID)
@@ -254,7 +254,7 @@ as
 		END TRY
 		BEGIN CATCH
 			ROLLBACK TRAN
-			SET @Mensaje = 'Error en la transacciÃ³n : '
+			SET @Mensaje = 'Error en la transaccion : '
 			PRINT @Mensaje
 			SELECT ERROR_MESSAGE() as ErrorMenssage
 		END CATCH
@@ -269,7 +269,6 @@ as
 	Delete from Employees where EmployeeID = @EmployeeID;
 go
 
-EXEC sp_delete_employees 9
 
 -----------------------------------Sección Orders-----------------------------------------------
 -----------------------------------Sección Shippers-----------------------------------------------
@@ -278,8 +277,454 @@ EXEC sp_delete_employees 9
 -----------------------------------Sección CustomerCustomerDemo-----------------------------------------------
 -----------------------------------Sección CustomerDemographic-----------------------------------------------
 -----------------------------------Sección Suppliers-----------------------------------------------
+
+DROP PROC IF EXISTS sp_Insert_Suppliers
+GO
+CREATE PROC sp_Insert_Suppliers
+@CompanyName nvarchar(40),
+@ContactName nvarchar(30),
+@ContactTitle nvarchar(30),
+@Address nvarchar(60),
+@City nvarchar(15),
+@Region nvarchar(15),
+@PostalCode nvarchar(10),
+@Country nvarchar(15),
+@Phone nvarchar(24),
+@Fax nvarchar(24),
+@HomePage ntext
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@CompanyName is null or LEN(@CompanyName) = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CompanyName, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Insertados Correctamente'
+			INSERT INTO Suppliers ([CompanyName],[ContactName],[ContactTitle],[Address],[City],[Region],[PostalCode],[Country],[Phone],[Fax],[HomePage])
+			VALUES (@CompanyName,@ContactName,@ContactTitle,@Address,@City,@Region,@PostalCode,@Country,@Phone,@Fax,@HomePage)
+			PRINT @Mensaje 
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+
+DROP PROC IF EXISTS sp_Update_Suppliers
+GO
+CREATE PROC sp_Update_Suppliers
+@SupplierID int,
+@CompanyName nvarchar(40),
+@ContactName nvarchar(30),
+@ContactTitle nvarchar(30),
+@Address nvarchar(60),
+@City nvarchar(15),
+@Region nvarchar(15),
+@PostalCode nvarchar(10),
+@Country nvarchar(15),
+@Phone nvarchar(24),
+@Fax nvarchar(24),
+@HomePage ntext
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@SupplierID is null or LEN(@SupplierID)= 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @SupplierID,fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@CompanyName is null or LEN(@CompanyName) = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CompanyName, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Actualizados Correctamente'
+			UPDATE Suppliers SET
+			[CompanyName] = @CompanyName,
+			[ContactName] = @ContactName,
+			[ContactTitle] = @ContactTitle,
+			[Address]  = @Address,
+			[City] = @City,
+			[Region] = @Region,
+			[PostalCode] = @PostalCode,
+			[Country] = @Country,
+			[Phone]  = @Phone,
+			[Fax] = @Fax,
+			[HomePage] = @HomePage
+			WHERE [SupplierID] = @SupplierID
+			PRINT @Mensaje 
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+
+DROP PROC IF EXISTS sp_Delete_Suppliers
+GO
+CREATE PROC sp_Delete_Suppliers
+@SupplierID int
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@SupplierID is null or LEN(@SupplierID)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @SupplierID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Eliminados Correctamente'
+			DELETE FROM Suppliers WHERE SupplierID = @SupplierID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+
+GO
+
+DROP PROC IF EXISTS sp_SelectWhereID_Suppliers
+GO
+CREATE PROC sp_SelectWhereID_Suppliers
+@SupplierID int
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@SupplierID is null or LEN(@SupplierID)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @SupplierID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SELECT TOP 100 s.*  FROM Suppliers s WHERE s.SupplierID = @SupplierID
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+
+GO
+
+DROP VIEW IF EXISTS vp_Select_Suppliers
+GO
+CREATE VIEW vp_Select_Suppliers
+AS
+	SELECT TOP 100 s.* FROM Suppliers s
+GO
+
 -----------------------------------Sección Territories-----------------------------------------------
+
+DROP PROC IF EXISTS sp_Insert_Territories
+GO
+
+CREATE PROC sp_Insert_Territories
+@TerritoryID nvarchar(20),
+@TerritoryDescription nvarchar(50),
+@RegionID int
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@TerritoryID is null or LEN(@TerritoryID)=0)
+	BEGIN
+		SET @Mensaje  = 'Error en la variable @TerritoryID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@TerritoryDescription is null or LEN(@TerritoryDescription)=0)
+	BEGIN
+		SET @Mensaje  = 'Error en la variable @TerritoryDescription, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@RegionID is null or LEN(@RegionID)=0)
+	BEGIN
+		SET @Mensaje  = 'Error en la variable @RegionID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Insertados Correctamente'
+			INSERT INTO Territories VALUES
+			(@TerritoryID,@TerritoryDescription,@RegionID)
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+
+DROP PROC IF EXISTS sp_Update_Territories
+GO
+CREATE PROC sp_Update_Territories
+@TerritoryID nvarchar(20),
+@TerritoryDescription nvarchar(50),
+@RegionID int
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@TerritoryID is null or LEN(@TerritoryID)=0)
+	BEGIN
+		SET @Mensaje  = 'Error en la variable @TerritoryID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@TerritoryDescription is null or LEN(@TerritoryDescription)=0)
+	BEGIN
+		SET @Mensaje  = 'Error en la variable @TerritoryDescription, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@RegionID is null or LEN(@RegionID)=0)
+	BEGIN
+		SET @Mensaje  = 'Error en la variable @RegionID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Actualizados Correctamente'
+			UPDATE Territories SET
+			[TerritoryDescription] = @TerritoryDescription,
+			[RegionID] = @RegionID
+			WHERE [TerritoryID] = @TerritoryID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+
+DROP PROC IF EXISTS sp_Delete_Territories
+GO
+CREATE PROC sp_Delete_Territories
+@TerritoryID nvarchar(20)
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@TerritoryID is null or LEN(@TerritoryID) = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @TerritoryID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Eliminados Correctamente'
+			DELETE FROM Territories WHERE TerritoryID = @TerritoryID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+
+DROP PROC IF EXISTS sp_SelectWhereID_Territories
+GO
+CREATE PROC sp_SelectWhereID_Territories
+@TerritoryID nvarchar(20)
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@TerritoryID is null or LEN(@TerritoryID)=0)
+	BEGIN
+		SET @Mensaje = 'Error e la varible @TerritoryID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SELECT TOP 100 t.TerritoryID,t.TerritoryDescription,r.RegionDescription 'Region' 
+			FROM Territories t JOIN Region r on (t.RegionID = r.RegionID)
+			WHERE t.TerritoryID = @TerritoryID
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+
+DROP VIEW IF EXISTS vp_Select_Territories
+GO
+CREATE VIEW vp_Select_Territories
+AS
+	SELECT TOP 100 t.TerritoryID,t.TerritoryDescription,r.RegionDescription 'Region'
+	FROM Territories t
+	JOIN Region r on(t.RegionID = r.RegionID)
+	
+GO
+
 -----------------------------------Sección Regions-----------------------------------------------
+
+DROP PROC IF EXISTS sp_Insert_Region
+GO
+CREATE PROC sp_Insert_Region
+@RegionID int,
+@RegionDescription nvarchar(50)
+AS
+	DECLARE @Mensaje nvarchar(100);
+	SET NOCOUNT ON;
+	IF(@RegionID is null or LEN(@RegionID)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @RegionID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@RegionDescription is null  or LEN(@RegionDescription)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @RegionDescription, fuera de rango o nulo.'
+		PRINT @Mensaje 
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Insertados Correctamente'
+			INSERT INTO 
+			Region (RegionID,RegionDescription)
+			VALUES (@RegionID,@RegionDescription)
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMenssage
+		END CATCH
+			
+GO
+DROP PROC IF EXISTS sp_Update_Region
+GO
+CREATE PROC sp_Update_Region
+@RegionID int,
+@RegionDescription nvarchar(50)
+AS
+	DECLARE @Mensaje nvarchar(100);
+	SET NOCOUNT ON;
+	IF(@RegionID is null or LEN(@RegionID)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @RegionID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@RegionDescription is null  or LEN(@RegionDescription)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @RegionDescription, fuera de rango o nulo.'
+		PRINT @Mensaje 
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Actualizados Correctamente'
+			UPDATE Region SET
+			[RegionDescription] = @RegionDescription
+			WHERE [RegionID] = @RegionID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMenssage
+		END CATCH
+			
+GO
+DROP PROC IF EXISTS sp_Delete_Region
+GO
+CREATE PROC sp_Delete_Region
+@RegionID int
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100);
+	IF(@RegionID is null or LEN(@RegionID)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @RegionID, fuera de rango o nulo.'
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Eliminados Correctamente'
+			DELETE FROM Region WHERE RegionID = @RegionID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+DROP PROC IF EXISTS sp_SelectWhereID_Region
+GO
+CREATE PROC sp_SelectWhereID_Region
+@RegionID int
+AS
+	SET NOCOUNT ON
+	DECLARE @Mensaje nvarchar(100)
+	IF(@RegionID is null or LEN(@RegionID)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @RegionID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SELECT TOP 100 r.RegionID,r.RegionDescription 
+			FROM  Region r
+			WHERE r.RegionID = @RegionID
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+DROP VIEW IF EXISTS vp_Select_Region
+GO
+CREATE VIEW vp_Select_Region
+as
+	SELECT TOP 100 r.RegionID, r.RegionDescription FROM Region r
+GO
+
 -----------------------------------Sección Products-----------------------------------------------
 -----------------------------------Sección Categories-----------------------------------------------
 -----------------------------------Sección OrderDetails-----------------------------------------------
