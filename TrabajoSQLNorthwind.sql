@@ -5,6 +5,24 @@ GO
 
 /*Restricciones delete  cascade*/
 
+ALTER TABLE Customers 
+DROP CONSTRAINT IF EXISTS Fk_Customers_CustomerCustomerDemo_Cascade_Delete
+
+ALTER TABLE Customers
+ADD CONSTRAINT Fk_Customers_CustomerCustomerDemo_Cascade_Delete FOREIGN KEY (customerID)
+REFERENCES CustomerCustomerDemo(customerID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE Customers 
+DROP CONSTRAINT IF EXISTS Fk_Customers_Orders_Cascade_Delete
+
+ALTER TABLE Customers
+ADD CONSTRAINT Fk_Customers_Orders_Cascade_Delete FOREIGN KEY (order_ID)
+REFERENCES Orders(customerID)
+ON DELETE CASCADE
+GO
+
 ALTER TABLE CustomerCustomerDemo
 DROP CONSTRAINT IF EXISTS Fk_CustomerCustomerDemo_CustomerDemographics_Cascade_Delete
 GO
@@ -20,6 +38,15 @@ GO
 ALTER TABLE CustomerCustomerDemo
 ADD CONSTRAINT Fk_CustomerCustomerDemo_Customers_Cascade_Delete FOREIGN KEY (CustomerID)
 REFERENCES Customers (CustomerID)
+ON DELETE CASCADE
+GO
+
+ALTER TABLE CustomerDemographics
+DROP CONSTRAINT IF EXISTS Fk_CustomerDemographics_CustomerCustomerDemo_Cascade_Delete
+GO
+ALTER TABLE CustomerDemographics
+ADD CONSTRAINT Fk_CustomerDemographics_CustomerCustomerDemo_Cascade_Delete FOREIGN KEY (CustomerID)
+REFERENCES CustomerCustomerDemo (CustomerID)
 ON DELETE CASCADE
 GO
 
@@ -274,6 +301,29 @@ go
 -----------------------------------Sección Shippers-----------------------------------------------
 -----------------------------------Sección EmployeeTerritories-----------------------------------------------
 -----------------------------------Sección Customers-----------------------------------------------
+DROP PROC IF EXISTS sp_Insert_Customers 
+GO
+CREATE PROC sp_Insert_Customers
+@company_name nvarchar(50),
+@contact_name nvarchar(50),
+@contact_title nvarchar(50),
+@address nvarchar(60),
+@city nvarchar(20),
+@region nvarchar(20),
+@postal_code nvarchar(15),
+@country nvarchar(20),
+@phone nvarchar(9),
+@fax nvarchar(30),
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@company_name is null or LEN(@company_name) = 0)
+	BEGIN
+		SET @Mensaje = 'ERROR'
+		PRINT @Mensaje
+		RETURN
+	END
+
 -----------------------------------Sección CustomerCustomerDemo-----------------------------------------------
 -----------------------------------Sección CustomerDemographic-----------------------------------------------
 -----------------------------------Sección Suppliers-----------------------------------------------
