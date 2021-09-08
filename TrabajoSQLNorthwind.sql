@@ -301,6 +301,22 @@ go
 -----------------------------------Sección Shippers-----------------------------------------------
 -----------------------------------Sección EmployeeTerritories-----------------------------------------------
 -----------------------------------Sección Customers-----------------------------------------------
+
+CREATE TABLE dbo.Customer(
+       CustomerID int IDENTITY(1,1) PRIMARY KEY NOT NULL,
+	   company_name nvarchar(50),
+	   contact_name nvarchar(50),
+	   contact_title nvarchar(50),
+	   address nvarchar(60),
+	   city nvarchar(20),
+	   region nvarchar(20),
+	   postal_code nvarchar(15),
+	   country nvarchar(20),
+	   phone nvarchar(9),
+	   fax nvarchar(30)
+ 
+)
+
 DROP PROC IF EXISTS sp_Insert_Customers 
 GO
 CREATE PROC sp_Insert_Customers
@@ -313,16 +329,49 @@ CREATE PROC sp_Insert_Customers
 @postal_code nvarchar(15),
 @country nvarchar(20),
 @phone nvarchar(9),
-@fax nvarchar(30),
+@fax nvarchar(30)
 AS
-	SET NOCOUNT ON;
-	DECLARE @Mensaje nvarchar(100)
-	IF(@company_name is null or LEN(@company_name) = 0)
-	BEGIN
-		SET @Mensaje = 'ERROR'
-		PRINT @Mensaje
-		RETURN
-	END
+BEGIN
+INSERT INTO Customers(
+		CompanyName,
+		ContactName,
+		ContactTitle,
+		Address,
+		City,
+		Region,
+		PostalCode,
+		Country,
+		Phone,
+		Fax)
+	VALUES (
+		@company_name ,
+		@contact_name ,
+		@contact_title ,
+		@address ,
+		@city,
+		@region ,
+		@postal_code ,
+		@country,
+		@phone,
+		@fax)
+
+SET @Customer= SCOPE_IDENTITY()
+
+SELECT
+		CompanyName = @company_name ,
+		ContactName = @contact_name ,
+		ContactTitle = @contact_title ,
+		Address = @address ,
+		City = @city,
+		Region = @region ,
+		PostalCode = @postal_code ,
+		Country = @country,
+		Phone = @phone,
+		Fax = @fax
+
+FROM Customers
+WHERE CustomerID = @CustomerID
+END
 
 -----------------------------------Sección CustomerCustomerDemo-----------------------------------------------
 -----------------------------------Sección CustomerDemographic-----------------------------------------------
