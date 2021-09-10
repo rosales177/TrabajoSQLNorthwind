@@ -373,7 +373,7 @@ AS
 	BEGIN TRAN
 		BEGIN TRY
 			SET @Mensaje = 'Datos Actualizados Correctamente'
-			UPDATE Suppliers SET
+			UPDATE Customers SET
 			[Companyname] = @company_name,
 			[contactname] = @contact_name,
 			[contacttitle] = @contact_title,
