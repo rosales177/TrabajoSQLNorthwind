@@ -143,7 +143,7 @@ GO
 
 
 
------------------------------------Secci髇 Employees-----------------------------------------------
+-----------------------------------Secci贸n Employees-----------------------------------------------
 DROP PROC IF EXISTS sp_Update_Employees
 GO
 
@@ -255,7 +255,7 @@ as
 	END
 	BEGIN TRAN
 		BEGIN TRY
-			SET @Mensaje = 'El registro se actualiz贸 correctamente.'
+			SET @Mensaje = 'El registro se actualiz脙鲁 correctamente.'
 			UPDATE Employees SET
 			[LastName] = @LastName,
 			[FirstName] = @FirstName,
@@ -297,10 +297,166 @@ as
 go
 
 
------------------------------------Secci髇 Orders-----------------------------------------------
------------------------------------Secci髇 Shippers-----------------------------------------------
------------------------------------Secci髇 EmployeeTerritories-----------------------------------------------
------------------------------------Secci髇 Customers-----------------------------------------------
+-----------------------------------Secci贸n Orders-----------------------------------------------
+-----------------------------------Secci贸n Shippers-----------------------------------------------
+DROP PROC IF EXISTS sp_insert_shippers
+go
+CREATE PROC sp_insert_shippers
+	@ShipperID int ,
+	@CompanyName nvarchar(40),
+	@Phone nvarchar(24)
+	
+	
+as
+declare @resultado varchar(50) 
+	SET NOCOUNT ON;
+
+	if @Phone is null or len(@phone)>6 or len(@phone)<10
+	begin
+		set @resultado = '@phone no valido o fuera de rango'
+		print @resultado
+		return
+	end
+	IF @CompanyName is null or len(@CompanyName)=0
+	begin
+		set @resultado = '@CompanyName no valido'
+		print @resultado
+		return
+	end
+	
+	BEGIN TRY 
+
+		INSERT INTO Shippers( ShipperID, CompanyName, Phone)
+		values(@ShipperID,@CompanyName, @Phone)
+		set @resultado = 'Datos insertados'
+		print @resultado
+		commit tran
+	end TRY
+	begin catch
+		SET @resultado = 'error de datos'
+		rollback tran
+			select ERROR_MESSAGE() as ErrorMessage
+	end catch
+
+
+go
+
+
+DROP PROC IF EXISTS sp_update_shippers
+go
+CREATE PROC sp_update_shippers
+	@ShipperID int ,
+	@CompanyName nvarchar(40) ,
+	@Phone nvarchar(24)
+as
+declare @resultado nvarchar(50)
+	SET NOCOUNT ON;
+	if @Phone is null or len(@phone)>6 or len(@phone)<10
+	begin
+		set @resultado = '@phone no valido o fuera de rango'
+		print @resultado
+		return
+	end
+	IF @CompanyName is null or len(@CompanyName)=0
+	begin
+		set @resultado = '@CompanyName no valido'
+		print @resultado
+		return
+	end
+
+	BEGIN TRY
+	
+		UPDATE Shippers set
+			CompanyName = @CompanyName,
+			Phone = @Phone
+		Where ShipperID = @ShipperID
+
+		Set @resultado='Datos Actualizados'
+		print @resultado
+		commit tran
+	end try
+	begin catch
+		set @resultado = 'Error en los datos'
+		rollback tran
+			Select ERROR_MESSAGE() as ErrorMessage
+	end catch
+
+go
+
+DROP PROC IF EXISTS sp_delete_shippers
+go
+CREATE PROC sp_delete_shippers
+	@ShipperID int 
+as
+declare @resultado nvarchar(50)
+
+	SET NOCOUNT ON;
+	if @ShipperID is null or len(@ShipperID)=0
+	Begin
+		set @resultado ='Error al resultado'
+		print @resultado
+		return
+	end
+	begin try
+				DELETE FROM Shippers Where ShipperID = @ShipperID
+				set @resultado = 'Datos eliminados'
+				print @resultado
+				commit tran
+	end try
+
+	Begin catch
+			Set @resultado='Hubo un error'
+			print @resultado
+			Rollback tran
+			SELECT
+				ERROR_MESSAGE() AS ErrorMessage;
+
+
+	END CATCH;
+go
+
+
+DROP PROC IF EXISTS sp_select_shippersID
+go
+CREATE PROC sp_select_shippersID
+	@ShipperID int 
+as
+declare @resultado nvarchar(50)
+
+	SET NOCOUNT ON;
+	if @ShipperID is null or LEN(@ShipperID)=0
+	begin
+		set @resultado = 'Error al dato'
+		print @resultado
+		return
+	end
+	Begin try
+		
+		SELECT CompanyName, Phone FROM Shippers 
+		Where ShipperID = @ShipperID
+		Commit tran
+	end try
+
+	Begin catch
+		set @resultado = 'Error a la vista'
+		print @resultado
+		select 
+		ERROR_MESSAGE () as ErrorMessage,
+		ERROR_SEVERITY() AS ErrorSeverity
+	end catch
+go
+
+Create View cv_select_shippers
+as
+	Select ShipperID, CompanyName, Phone From Shippers
+
+go
+
+
+
+
+-----------------------------------Secci贸n EmployeeTerritories-----------------------------------------------
+-----------------------------------Secci贸n Customers-----------------------------------------------
 
 DROP PROC IF EXISTS sp_Insert_Customers 
 GO
@@ -458,7 +614,7 @@ AS
 	SELECT TOP 100 c.* FROM Customers c
 GO
 
------------------------------------Secci髇 CustomerCustomerDemo-----------------------------------------------
+-----------------------------------Secci贸n CustomerCustomerDemo-----------------------------------------------
 
 DROP PROC IF EXISTS sp_Insert_CustomerCustomerDemo
 GO
@@ -598,6 +754,7 @@ AS
 	
 GO
 
+
 -----------------------------------Secci髇 CustomerDemographic-----------------------------------------------
 
 DROP PROC IF EXISTS sp_Insert_CustomerDemographics
@@ -733,6 +890,10 @@ GO
 
 
 -----------------------------------Secci髇 Suppliers-----------------------------------------------
+
+-----------------------------------Secci贸n CustomerDemographic-----------------------------------------------
+-----------------------------------Secci贸n Suppliers-----------------------------------------------
+
 
 DROP PROC IF EXISTS sp_Insert_Suppliers
 GO
@@ -891,7 +1052,7 @@ AS
 	SELECT TOP 100 s.* FROM Suppliers s
 GO
 
------------------------------------Secci髇 Territories-----------------------------------------------
+-----------------------------------Secci贸n Territories-----------------------------------------------
 
 DROP PROC IF EXISTS sp_Insert_Territories
 GO
@@ -1046,7 +1207,7 @@ AS
 	
 GO
 
------------------------------------Secci髇 Regions-----------------------------------------------
+-----------------------------------Secci贸n Regions-----------------------------------------------
 
 DROP PROC IF EXISTS sp_Insert_Region
 GO
@@ -1181,9 +1342,9 @@ as
 	SELECT TOP 100 r.RegionID, r.RegionDescription FROM Region r
 GO
 
------------------------------------Secci髇 Products-----------------------------------------------
------------------------------------Secci髇 Categories-----------------------------------------------
------------------------------------Secci髇 OrderDetails-----------------------------------------------
+-----------------------------------Secci贸n Products-----------------------------------------------
+-----------------------------------Secci贸n Categories-----------------------------------------------
+-----------------------------------Secci贸n OrderDetails-----------------------------------------------
 
 /*Realizar el CRUD de cada tabla dentro de las secciones correcpondientes*/
 
