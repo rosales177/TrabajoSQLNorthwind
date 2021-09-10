@@ -341,6 +341,122 @@ AS
 		END CATCH
 GO
 
+DROP PROC IF EXISTS sp_Update_Customers
+GO
+CREATE PROC sp_Update_Customers
+@CustomerID int,
+@company_name nvarchar(50),
+@contact_name nvarchar(50),
+@contact_title nvarchar(50),
+@address nvarchar(60),
+@city nvarchar(20),
+@region nvarchar(20),
+@postal_code nvarchar(15),
+@country nvarchar(20),
+@phone nvarchar(9),
+@fax nvarchar(30)
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@CustomerID is null or LEN(@CustomerID)= 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CustomerID,fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@company_name is null or LEN(@company_name) = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @company_name, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Actualizados Correctamente'
+			UPDATE Suppliers SET
+			[Companyname] = @company_name,
+			[contactname] = @contact_name,
+			[contacttitle] = @contact_title,
+			[address]  = @address,
+			[city] = @city,
+			[region] = @region,
+			[postalcode] = @postal_code,
+			[country] = @country,
+			[phone]  = @phone,
+			[fax] = @fax
+			WHERE [CustomerID] = @CustomerID
+			PRINT @Mensaje 
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+
+DROP PROC IF EXISTS sp_Delete_Suppliers
+GO
+CREATE PROC sp_Delete_Suppliers
+@SupplierID int
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@SupplierID is null or LEN(@SupplierID)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @SupplierID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Eliminados Correctamente'
+			DELETE FROM Suppliers WHERE SupplierID = @SupplierID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+
+GO
+
+DROP PROC IF EXISTS sp_SelectWhereID_Suppliers
+GO
+CREATE PROC sp_SelectWhereID_Suppliers
+@SupplierID int
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@SupplierID is null or LEN(@SupplierID)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @SupplierID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SELECT TOP 100 s.*  FROM Suppliers s WHERE s.SupplierID = @SupplierID
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+
+GO
+
+DROP VIEW IF EXISTS vp_Select_Suppliers
+GO
+CREATE VIEW vp_Select_Suppliers
+AS
+	SELECT TOP 100 s.* FROM Suppliers s
+GO
+
 -----------------------------------Sección CustomerCustomerDemo-----------------------------------------------
 -----------------------------------Sección CustomerDemographic-----------------------------------------------
 -----------------------------------Sección Suppliers-----------------------------------------------
