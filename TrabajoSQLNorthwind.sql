@@ -344,7 +344,7 @@ GO
 DROP PROC IF EXISTS sp_Update_Customers
 GO
 CREATE PROC sp_Update_Customers
-@CustomerID int,
+@customerID int,
 @company_name nvarchar(50),
 @contact_name nvarchar(50),
 @contact_title nvarchar(50),
@@ -358,9 +358,9 @@ CREATE PROC sp_Update_Customers
 AS
 	SET NOCOUNT ON;
 	DECLARE @Mensaje nvarchar(100)
-	IF(@CustomerID is null or LEN(@CustomerID)= 0)
+	IF(@customerID is null or LEN(@customerID)= 0)
 	BEGIN
-		SET @Mensaje = 'Error en la variable @CustomerID,fuera de rango o nulo.'
+		SET @Mensaje = 'Error en la variable @customerID,fuera de rango o nulo.'
 		PRINT @Mensaje
 		RETURN
 	END
@@ -374,7 +374,7 @@ AS
 		BEGIN TRY
 			SET @Mensaje = 'Datos Actualizados Correctamente'
 			UPDATE Suppliers SET
-			[Companyname] = @company_name,
+			[companyname] = @company_name,
 			[contactname] = @contact_name,
 			[contacttitle] = @contact_title,
 			[address]  = @address,
@@ -384,35 +384,37 @@ AS
 			[country] = @country,
 			[phone]  = @phone,
 			[fax] = @fax
-			WHERE [CustomerID] = @CustomerID
-			PRINT @Mensaje 
+			WHERE 
+			customerID = @customerID
+			PRINT @Mensaje
 			COMMIT TRAN
 		END TRY
 		BEGIN CATCH
 			ROLLBACK TRAN
-			SET @Mensaje = 'Error en la Transaccion : '
+			SET @Mensaje = 'Error en la transaccion : '
 			PRINT @Mensaje
-			SELECT ERROR_MESSAGE() as ErrorMessage
+			SELECT ERROR_MESSAGE() as ErrorMenssage
 		END CATCH
+
 GO
 
-DROP PROC IF EXISTS sp_Delete_Suppliers
+DROP PROC IF EXISTS sp_Delete_Customers
 GO
-CREATE PROC sp_Delete_Suppliers
-@SupplierID int
+CREATE PROC sp_Delete_Customers
+@customerID int
 AS
 	SET NOCOUNT ON;
 	DECLARE @Mensaje nvarchar(100)
-	IF(@SupplierID is null or LEN(@SupplierID)=0)
+	IF(@customerID is null or LEN(@customerID)=0)
 	BEGIN
-		SET @Mensaje = 'Error en la variable @SupplierID, fuera de rango o nulo.'
+		SET @Mensaje = 'Error en la variable @customerID, fuera de rango o nulo.'
 		PRINT @Mensaje
 		RETURN
 	END
 	BEGIN TRAN
 		BEGIN TRY
 			SET @Mensaje = 'Datos Eliminados Correctamente'
-			DELETE FROM Suppliers WHERE SupplierID = @SupplierID
+			DELETE FROM Customers WHERE customerID = @customerID
 			PRINT @Mensaje
 			COMMIT TRAN
 		END TRY
@@ -424,22 +426,22 @@ AS
 
 GO
 
-DROP PROC IF EXISTS sp_SelectWhereID_Suppliers
+DROP PROC IF EXISTS sp_SelectWhereID_Customers
 GO
-CREATE PROC sp_SelectWhereID_Suppliers
-@SupplierID int
+CREATE PROC sp_SelectWhereID_Customers
+@customerID int
 AS
 	SET NOCOUNT ON;
 	DECLARE @Mensaje nvarchar(100)
-	IF(@SupplierID is null or LEN(@SupplierID)=0)
+	IF(@customerID is null or LEN(@customerID)=0)
 	BEGIN
-		SET @Mensaje = 'Error en la variable @SupplierID, fuera de rango o nulo.'
+		SET @Mensaje = 'Error en la variable @customerID, fuera de rango o nulo.'
 		PRINT @Mensaje
 		RETURN
 	END
 	BEGIN TRAN
 		BEGIN TRY
-			SELECT TOP 100 s.*  FROM Suppliers s WHERE s.SupplierID = @SupplierID
+			SELECT TOP 100 s.*  FROM Customers s WHERE s.customerID = @customerID
 			COMMIT TRAN
 		END TRY
 		BEGIN CATCH
@@ -450,11 +452,11 @@ AS
 
 GO
 
-DROP VIEW IF EXISTS vp_Select_Suppliers
+DROP VIEW IF EXISTS vp_Select_Customers
 GO
-CREATE VIEW vp_Select_Suppliers
+CREATE VIEW vp_Select_Customers
 AS
-	SELECT TOP 100 s.* FROM Suppliers s
+	SELECT TOP 100 s.* FROM Customers s
 GO
 
 -----------------------------------Sección CustomerCustomerDemo-----------------------------------------------
