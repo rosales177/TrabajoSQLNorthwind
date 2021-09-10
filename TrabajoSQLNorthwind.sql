@@ -372,7 +372,7 @@ AS
 	BEGIN TRAN
 		BEGIN TRY
 			SET @Mensaje = 'Datos Actualizados Correctamente'
-			UPDATE Suppliers SET
+			UPDATE Customers SET
 			[companyname] = @company_name,
 			[contactname] = @contact_name,
 			[contacttitle] = @contact_title,
@@ -440,7 +440,7 @@ AS
 	END
 	BEGIN TRAN
 		BEGIN TRY
-			SELECT TOP 100 s.*  FROM Customers s WHERE s.customerID = @customerID
+			SELECT TOP 100 c.*  FROM Customers c WHERE c.customerID = @customerID
 			COMMIT TRAN
 		END TRY
 		BEGIN CATCH
@@ -455,7 +455,7 @@ DROP VIEW IF EXISTS vp_Select_Customers
 GO
 CREATE VIEW vp_Select_Customers
 AS
-	SELECT TOP 100 s.* FROM Customers s
+	SELECT TOP 100 c.* FROM Customers c
 GO
 
 -----------------------------------Sección CustomerCustomerDemo-----------------------------------------------
@@ -464,8 +464,8 @@ DROP PROC IF EXISTS sp_Insert_CustomerCustomerDemo
 GO
 
 CREATE PROC sp_Insert_CustomerCustomerDemo
-@CustomerID int,
-@CustomerTypeID int
+@CustomerID nvarchar(50),
+@CustomerTypeID nvarchar(50)
 AS
 	SET NOCOUNT ON;
 	DECLARE @Mensaje nvarchar(100)
@@ -485,8 +485,8 @@ AS
 	BEGIN TRAN
 		BEGIN TRY
 			SET @Mensaje = 'Datos Insertados Correctamente'
-			INSERT INTO Territories VALUES
-			(@TerritoryID,@TerritoryDescription,@RegionID)
+			INSERT INTO CustomerCustomerDemo VALUES
+			(@CustomerID,@CustomerTypeID)
 			PRINT @Mensaje
 			COMMIT TRAN
 		END TRY
@@ -497,40 +497,32 @@ AS
 		END CATCH
 GO
 
-DROP PROC IF EXISTS sp_Update_Territories
+DROP PROC IF EXISTS sp_Update_CustomerCustomerDemo
 GO
-CREATE PROC sp_Update_Territories
-@TerritoryID nvarchar(20),
-@TerritoryDescription nvarchar(50),
-@RegionID int
+CREATE PROC sp_Update_CustomerCustomerDemo
+@CustomerID nvarchar(50),
+@CustomerTypeID nvarchar(50)
 AS
 	SET NOCOUNT ON;
 	DECLARE @Mensaje nvarchar(100)
-	IF(@TerritoryID is null or LEN(@TerritoryID)=0)
+	IF(@CustomerID is null or LEN(@CustomerID)=0)
 	BEGIN
-		SET @Mensaje  = 'Error en la variable @TerritoryID, fuera de rango o nulo.'
+		SET @Mensaje  = 'Error en la variable @CustomerID, fuera de rango o nulo.'
 		PRINT @Mensaje
 		RETURN
 	END
-	IF(@TerritoryDescription is null or LEN(@TerritoryDescription)=0)
+	IF(@CustomerTypeID is null or LEN(@CustomerTypeID)=0)
 	BEGIN
-		SET @Mensaje  = 'Error en la variable @TerritoryDescription, fuera de rango o nulo.'
-		PRINT @Mensaje
-		RETURN
-	END
-	IF(@RegionID is null or LEN(@RegionID)=0)
-	BEGIN
-		SET @Mensaje  = 'Error en la variable @RegionID, fuera de rango o nulo.'
+		SET @Mensaje  = 'Error en la variable @CustomerTypeID, fuera de rango o nulo.'
 		PRINT @Mensaje
 		RETURN
 	END
 	BEGIN TRAN
 		BEGIN TRY
 			SET @Mensaje = 'Datos Actualizados Correctamente'
-			UPDATE Territories SET
-			[TerritoryDescription] = @TerritoryDescription,
-			[RegionID] = @RegionID
-			WHERE [TerritoryID] = @TerritoryID
+			UPDATE CustomerCustomerDemo SET
+			[CustomerTypeID] = @CustomerTypeID
+			WHERE [CustomerID] = @CustomerID
 			PRINT @Mensaje
 			COMMIT TRAN
 		END TRY
@@ -541,23 +533,23 @@ AS
 		END CATCH
 GO
 
-DROP PROC IF EXISTS sp_Delete_Territories
+DROP PROC IF EXISTS sp_Delete_CustomerCustomerDemo
 GO
-CREATE PROC sp_Delete_Territories
-@TerritoryID nvarchar(20)
+CREATE PROC sp_Delete_CustomerCustomerDemo
+@CustomerID nvarchar(50)
 AS
 	SET NOCOUNT ON;
 	DECLARE @Mensaje nvarchar(100)
-	IF(@TerritoryID is null or LEN(@TerritoryID) = 0)
+	IF(@CustomerID is null or LEN(@CustomerID) = 0)
 	BEGIN
-		SET @Mensaje = 'Error en la variable @TerritoryID, fuera de rango o nulo.'
+		SET @Mensaje = 'Error en la variable @CustomerID, fuera de rango o nulo.'
 		PRINT @Mensaje
 		RETURN
 	END
 	BEGIN TRAN
 		BEGIN TRY
 			SET @Mensaje = 'Datos Eliminados Correctamente'
-			DELETE FROM Territories WHERE TerritoryID = @TerritoryID
+			DELETE FROM CustomerCustomerDemo WHERE CustomerID = @CustomerID
 			PRINT @Mensaje
 			COMMIT TRAN
 		END TRY
@@ -569,24 +561,24 @@ AS
 		END CATCH
 GO
 
-DROP PROC IF EXISTS sp_SelectWhereID_Territories
+DROP PROC IF EXISTS sp_SelectWhereID_CustomerCustomerDemo
 GO
-CREATE PROC sp_SelectWhereID_Territories
-@TerritoryID nvarchar(20)
+CREATE PROC sp_SelectWhereID_CustomerCustomerDemo
+@CustomerID nvarchar(20)
 AS
 	SET NOCOUNT ON;
 	DECLARE @Mensaje nvarchar(100)
-	IF(@TerritoryID is null or LEN(@TerritoryID)=0)
+	IF(@CustomerID is null or LEN(@CustomerID)=0)
 	BEGIN
-		SET @Mensaje = 'Error e la varible @TerritoryID, fuera de rango o nulo.'
+		SET @Mensaje = 'Error e la varible @CustomerID, fuera de rango o nulo.'
 		PRINT @Mensaje
 		RETURN
 	END
 	BEGIN TRAN
 		BEGIN TRY
-			SELECT TOP 100 t.TerritoryID,t.TerritoryDescription,r.RegionDescription 'Region' 
-			FROM Territories t JOIN Region r on (t.RegionID = r.RegionID)
-			WHERE t.TerritoryID = @TerritoryID
+			SELECT TOP 100 d.CustomerID,d.CustomerTypeID
+			FROM CustomerCustomerDemo d
+			WHERE d.CustomerID = @CustomerID
 			COMMIT TRAN
 		END TRY
 		BEGIN CATCH
@@ -597,17 +589,149 @@ AS
 		END CATCH
 GO
 
-DROP VIEW IF EXISTS vp_Select_Territories
+DROP VIEW IF EXISTS vp_Select_CustomerCustomerDemo
 GO
-CREATE VIEW vp_Select_Territories
+CREATE VIEW vp_Select_CustomerCustomerDemo
 AS
-	SELECT TOP 100 t.TerritoryID,t.TerritoryDescription,r.RegionDescription 'Region'
-	FROM Territories t
-	JOIN Region r on(t.RegionID = r.RegionID)
+	SELECT TOP 100 d.CustomerID,d.CustomerTypeID
+			FROM CustomerCustomerDemo d
 	
 GO
 
 -----------------------------------Sección CustomerDemographic-----------------------------------------------
+
+DROP PROC IF EXISTS sp_Insert_CustomerDemographics
+GO
+CREATE PROC sp_Insert_CustomerDemographics
+@CustomerTypeID nvarchar(50),
+@CustomerDesc nvarchar(50)
+AS
+	DECLARE @Mensaje nvarchar(100);
+	SET NOCOUNT ON;
+	IF(@CustomerTypeID is null or LEN(@CustomerTypeID)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CustomerTypeID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@CustomerDesc is null  or LEN(@CustomerDesc)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CustomerDesc, fuera de rango o nulo.'
+		PRINT @Mensaje 
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Insertados Correctamente'
+			INSERT INTO CustomerDemographics VALUES
+			(@CustomerTypeID, @CustomerDesc)
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+DROP PROC IF EXISTS sp_Update_CustomerDemographics
+GO
+CREATE PROC sp_Update_CustomerDemographics
+@CustomerTypeID nvarchar(50),
+@CustomerDesc nvarchar(50)
+AS
+	DECLARE @Mensaje nvarchar(100);
+	SET NOCOUNT ON;
+	IF(@CustomerTypeID is null or LEN(@CustomerTypeID)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CustomerTypeID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@CustomerDesc is null  or LEN(@CustomerDesc)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CustomerDesc, fuera de rango o nulo.'
+		PRINT @Mensaje 
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Actualizados Correctamente'
+			UPDATE CustomerDemographics SET
+			[CustomerDesc] = @CustomerDesc
+			WHERE [CustomerTypeID] = @CustomerTypeID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMenssage
+		END CATCH
+			
+GO
+DROP PROC IF EXISTS sp_Delete_CustomerDemographics
+GO
+CREATE PROC sp_Delete_CustomerDemographics
+@CustomerTypeID nvarchar(50)
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100);
+	IF(@CustomerTypeID is null or LEN(@CustomerTypeID)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CustomerTypeID, fuera de rango o nulo.'
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Eliminados Correctamente'
+			DELETE FROM CustomerDemographics WHERE @CustomerTypeID = @CustomerTypeID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+DROP PROC IF EXISTS sp_SelectWhereID_CustomerDemographics
+GO
+CREATE PROC sp_SelectWhereID_CustomerDemographics
+@CustomerTypeID int
+AS
+	SET NOCOUNT ON
+	DECLARE @Mensaje nvarchar(100)
+	IF(@CustomerTypeID is null or LEN(@CustomerTypeID)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CustomerTypeID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SELECT TOP 100 ct.CustomerTypeID,ct.CustomerDesc 
+			FROM  CustomerDemographics ct
+			WHERE ct.CustomerTypeID = @CustomerTypeID
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+DROP VIEW IF EXISTS vp_Select_CustomerDemographics
+GO
+CREATE VIEW vp_Select_CustomerDemographics
+AS
+			SELECT TOP 100 ct.CustomerTypeID,ct.CustomerDesc 
+			FROM  CustomerDemographics ct
+GO
+
+
 -----------------------------------Sección Suppliers-----------------------------------------------
 
 DROP PROC IF EXISTS sp_Insert_Suppliers
