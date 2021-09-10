@@ -302,20 +302,6 @@ go
 -----------------------------------Sección EmployeeTerritories-----------------------------------------------
 -----------------------------------Sección Customers-----------------------------------------------
 
-CREATE TABLE dbo.Customer(
-       CustomerID int IDENTITY(1,1) PRIMARY KEY NOT NULL,
-	   company_name nvarchar(50),
-	   contact_name nvarchar(50),
-	   contact_title nvarchar(50),
-	   address nvarchar(60),
-	   city nvarchar(20),
-	   region nvarchar(20),
-	   postal_code nvarchar(15),
-	   country nvarchar(20),
-	   phone nvarchar(9),
-	   fax nvarchar(30)
- 
-)
 
 DROP PROC IF EXISTS sp_Insert_Customers 
 GO
