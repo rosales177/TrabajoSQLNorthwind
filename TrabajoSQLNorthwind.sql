@@ -5,23 +5,6 @@ GO
 
 /*Restricciones delete  cascade*/
 
-ALTER TABLE Customers 
-DROP CONSTRAINT IF EXISTS Fk_Customers_CustomerCustomerDemo_Cascade_Delete
-
-ALTER TABLE Customers
-ADD CONSTRAINT Fk_Customers_CustomerCustomerDemo_Cascade_Delete FOREIGN KEY (customerID)
-REFERENCES CustomerCustomerDemo(customerID)
-ON DELETE CASCADE
-GO
-
-ALTER TABLE Customers 
-DROP CONSTRAINT IF EXISTS Fk_Customers_Orders_Cascade_Delete
-
-ALTER TABLE Customers
-ADD CONSTRAINT Fk_Customers_Orders_Cascade_Delete FOREIGN KEY (order_ID)
-REFERENCES Orders(customerID)
-ON DELETE CASCADE
-GO
 
 ALTER TABLE CustomerCustomerDemo
 DROP CONSTRAINT IF EXISTS Fk_CustomerCustomerDemo_CustomerDemographics_Cascade_Delete
@@ -38,15 +21,6 @@ GO
 ALTER TABLE CustomerCustomerDemo
 ADD CONSTRAINT Fk_CustomerCustomerDemo_Customers_Cascade_Delete FOREIGN KEY (CustomerID)
 REFERENCES Customers (CustomerID)
-ON DELETE CASCADE
-GO
-
-ALTER TABLE CustomerDemographics
-DROP CONSTRAINT IF EXISTS Fk_CustomerDemographics_CustomerCustomerDemo_Cascade_Delete
-GO
-ALTER TABLE CustomerDemographics
-ADD CONSTRAINT Fk_CustomerDemographics_CustomerCustomerDemo_Cascade_Delete FOREIGN KEY (CustomerID)
-REFERENCES CustomerCustomerDemo (CustomerID)
 ON DELETE CASCADE
 GO
 
@@ -288,13 +262,132 @@ as
 
 GO
 
+DROP PROC IF EXISTS sp_Insert_Employees
+GO
+CREATE PROC sp_Insert_Employees
+@LastName nvarchar(20) ,
+@FirstName nvarchar(10) ,
+@Title nvarchar(30) ,
+@TitleOfCourtesy nvarchar(25) ,
+@BirthDate date ,
+@HireDate date ,
+@Address nvarchar(60) ,
+@City nvarchar(15) ,
+@Region nvarchar(15) ,
+@PostalCode nvarchar(10) ,
+@Country nvarchar(15) ,
+@HomePhone nvarchar(24) ,
+@Extension nvarchar(4),
+@Photo image,
+@Notes ntext,
+@ReportsTo int,
+@PhotoPath nvarchar(255)
+as
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100); 
+	IF (@LastName is null or LEN(@LastName)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @LastName, fuera de rango o nulo'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF (@FirstName is null or LEN(@FirstName)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @FirstName, fuera de rango o nulo'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF (@ReportsTo is null or @ReportsTo = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @RepostsTo, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'El registro se inserto correctamente.'
+			INSERT INTO Employees 
+			(LastName,FirstName,Title,TitleOfCourtesy,BirthDate,HireDate,[Address],City,Region,PostalCode,Country,HomePhone,Extension,Photo,Notes,ReportsTo,PhotoPath)
+			VALUES (@LastName,@FirstName,@Title,@TitleOfCourtesy,@BirthDate,@HireDate,@Address,@City,@Region,@PostalCode,@Country,@HomePhone,@Extension,@Photo,@Notes,@ReportsTo,@PhotoPath)
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as Menssage,
+				ERROR_NUMBER() as Number
+		END CATCH
+GO
+
+
 DROP PROC IF EXISTS sp_delete_employees
 go
-create proc sp_delete_employees
+CREATE PROC sp_delete_employees
 @EmployeeID int
 as
-	Delete from Employees where EmployeeID = @EmployeeID;
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100);
+	IF(@EmployeeID is null)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @EmployeeID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Eliminados Correctamente'
+			Delete from Employees where EmployeeID = @EmployeeID;
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as [Messages],
+				ERROR_NUMBER() as Number
+		END CATCH
 go
+
+DROP PROC IF EXISTS sp_SelectWhereID_Employees
+GO
+CREATE PROC sp_SelectWhereID_Employees
+@EmployeeID int
+as
+	DECLARE @Mensaje nvarchar(100)
+	IF (@EmployeeID is null)
+	BEGIN 
+		SET @Mensaje = 'Error en la variable @EmployeeID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SELECT TOP 100 e.* FROM Employees e WHERE EmployeeID = @EmployeeID
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			SET @Mensaje = 'Error en la transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as 'Message',
+				ERROR_NUMBER() as Number
+		END CATCH
+GO
+
+DROP VIEW IF EXISTS vp_Select_Employee
+GO
+CREATE VIEW vp_Select_Employee
+as
+	SELECT TOP 100 e.* FROM Employees e 
+GO
 
 
 -----------------------------------Seccion Orders-----------------------------------------------
@@ -445,7 +538,8 @@ declare @resultado nvarchar(50)
 		ERROR_SEVERITY() AS ErrorSeverity
 	end catch
 go
-
+DROP view IF EXISTS cv_select_shippers
+GO
 Create View cv_select_shippers
 as
 	Select ShipperID, CompanyName, Phone From Shippers
@@ -1337,8 +1431,651 @@ as
 GO
 
 -----------------------------------Seccion Products-----------------------------------------------
+
+DROP PROC IF EXISTS sp_Insert_Products
+GO
+CREATE PROC sp_Insert_Products
+@ProductName nvarchar(40),
+@SupplierID int,
+@CategoryID int,
+@QuantityPerUnit nvarchar(20),
+@UnitPrice money,
+@UnitsInStock smallint,
+@UnitsOnOrder smallint,
+@ReorderLevel smallint,
+@Discontinued bit
+as
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@ProductName is null or LEN(@ProductName)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @ProductName, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@Discontinued is null)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @Discontinued, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN 
+		BEGIN TRY
+			SET @Mensaje = 'Datos Insertados Correctamente'
+			INSERT INTO Products (ProductName,SupplierID,CategoryID,QuantityPerUnit,UnitPrice,UnitsInStock,UnitsOnOrder,ReorderLevel,Discontinued)
+			VALUES (@ProductName,@SupplierID,@CategoryID,@QuantityPerUnit,@UnitPrice,@UnitsInStock,@UnitsOnOrder,@ReorderLevel,@Discontinued)
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as 'Message',
+				ERROR_NUMBER() as Number
+		END CATCH
+GO
+
+
+DROP PROC IF EXISTS sp_Update_Products
+GO
+CREATE PROC sp_Update_Products
+@ProductID int,
+@ProductName nvarchar(40),
+@SupplierID int,
+@CategoryID int,
+@QuantityPerUnit nvarchar(20),
+@UnitPrice money,
+@UnitsInStock smallint,
+@UnitsOnOrder smallint,
+@ReorderLevel smallint,
+@Discontinued bit
+as
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@ProductID is null)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @ProductID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@ProductName is null or LEN(@ProductName)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @ProductName, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@Discontinued is null)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @Discontinued, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN 
+		BEGIN TRY
+			SET @Mensaje = 'Datos Actualizados Correctamente'
+			UPDATE Products SET
+			[ProductName] = @ProductName,
+			[SupplierID] = @SupplierID,
+			[CategoryID] = @CategoryID,
+			[QuantityPerUnit] = @QuantityPerUnit,
+			[UnitPrice] = @UnitPrice,
+			[UnitsInStock] = @UnitsInStock,
+			[UnitsOnOrder] = @UnitsOnOrder,
+			[ReorderLevel] = @ReorderLevel,
+			[Discontinued] = @Discontinued
+			WHERE [ProductID] = @ProductID
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as 'Message',
+				ERROR_NUMBER() as Number
+		END CATCH
+GO
+
+DROP PROC IF EXISTS sp_Delete_Products
+GO
+CREATE PROC sp_Delete_Products
+@ProductID int
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF (@ProductID is null)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @ProductID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Eliminados Correctamente'
+			DELETE FROM Products WHERE ProductID = @ProductID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Linea,
+				ERROR_MESSAGE() as [Message],
+				ERROR_NUMBER() as Number
+		END CATCH
+GO
+
+DROP PROC IF EXISTS sp_SelectWhereID_Products
+GO
+CREATE PROC sp_SelectWhereID_Products
+@ProductID int
+AS
+	DECLARE @Mensaje nvarchar(100)
+	IF (@ProductID is null)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @ProductID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SELECT TOP 100 p.ProductID,p.ProductName,s.CompanyName 'Supplier',c.CategoryName,p.QuantityPerUnit,p.UnitPrice,p.UnitsInStock,p.UnitsOnOrder,p.ReorderLevel,p.Discontinued 
+			FROM Products p 
+			JOIN Categories c 
+			ON (p.CategoryID= c.CategoryID)
+			JOIN Suppliers s
+			ON (p.SupplierID = s.SupplierID) 
+			WHERE ProductID = @ProductID
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as [Message],
+				ERROR_NUMBER() as Number
+			END CATCH
+
+GO
+
+DROP VIEW IF EXISTS vp_Select_Products
+GO
+CREATE VIEW vp_Select_Products
+AS
+	SELECT TOP 100 p.ProductID,p.ProductName,s.CompanyName 'Supplier',c.CategoryName,p.QuantityPerUnit,p.UnitPrice,p.UnitsInStock,p.UnitsOnOrder,p.ReorderLevel,p.Discontinued 
+	FROM Products p 
+	JOIN Categories c 
+	ON (p.CategoryID= c.CategoryID)
+	JOIN Suppliers s
+	ON (p.SupplierID = s.SupplierID)
+GO
+
 -----------------------------------Seccion Categories-----------------------------------------------
+
+
+DROP PROC IF EXISTS sp_Insert_Categories
+GO
+CREATE PROC sp_Insert_Categories
+@CategoryName nvarchar(15),
+@Description ntext,
+@Picture image
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF (@CategoryName is null or LEN(@CategoryName)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CategoryName, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Insertados Correctamente'
+			INSERT INTO Categories ([CategoryName],[Description],[Picture]) VALUES
+			(@CategoryName,@Description,@Picture)
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as [Message],
+				ERROR_NUMBER() as Number
+		END CATCH
+GO
+
+DROP PROC IF EXISTS sp_Update_Categories
+GO
+CREATE PROC sp_Update_Categories
+@CategoryID int,
+@CategoryName nvarchar(15),
+@Description ntext,
+@Picture image
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@CategoryID is null)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CategoryID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF (@CategoryName is null or LEN(@CategoryName)=0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CategoryName, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Actualizados Correctamente'
+			UPDATE Categories SET 
+			[CategoryName] = @CategoryName,
+			[Description] = @Description,
+			[Picture] = @Picture
+			WHERE [CategoryID] = @CategoryID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as [Message],
+				ERROR_NUMBER() as Number
+		END CATCH
+GO
+
+
+DROP PROC IF EXISTS sp_Delete_Categories
+GO
+CREATE PROC sp_Delete_Categories
+@CategoryID int
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@CategoryID is null)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CategoryID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Eliminados Correctamente'
+			DELETE FROM Products WHERE [CategoryID] = @CategoryID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as [Message],
+				ERROR_NUMBER() as Number
+		END CATCH
+GO
+
+DROP PROC IF EXISTS sp_SelectWhereID_Categories
+GO
+CREATE PROC sp_SelectWhereID_Categories
+@CategoryID int
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@CategoryID is null)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @CategoryID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SELECT TOP 100 c.* FROM Categories c WHERE CategoryID = @CategoryID
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as [Message],
+				ERROR_NUMBER() as Number
+		END CATCH
+GO
+
+DROP VIEW IF EXISTS vp_Select_Categories
+GO
+CREATE VIEW vp_Select_Categories
+AS
+	SELECT TOP 100 c.* FROM Categories c
+GO
+
 -----------------------------------Seccion OrderDetails-----------------------------------------------
+/*(OPCIONAL INSERT ORDERDETAILS)*/
+DROP PROC IF EXISTS sp_Insert_OrderDetails
+GO
+CREATE PROC sp_Insert_OrderDetails
+@OrderID int,
+@ProductID int,
+@UnitPrice money,
+@Quantity smallint,
+@Discount real
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@OrderID is null or @OrderID = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @OrderID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@ProductID is null or @ProductID = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @ProductID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@UnitPrice is null or @UnitPrice = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @UnitPrice, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@Quantity is null or @Quantity = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @Quantity, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@Discount is null or @Discount = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @Discount, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Insertados Correctamente'
+			INSERT INTO [Order Details] VALUES (@OrderID,@ProductID,@UnitPrice,@Quantity,@Discount)
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as [Message],
+				ERROR_NUMBER() as Number
+		END CATCH
+
+
+GO
+
+DROP TRIGGER IF EXISTS tr_Insert_Order_Details
+GO
+CREATE TRIGGER tr_Insert_Order_Details
+ON Orders
+FOR INSERT
+AS
+SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	DECLARE @OrderID int
+	DECLARE @ProductID int
+	DECLARE @UnitPrice smallint
+	DECLARE @Quantity money
+	DECLARE @Discount real
+	SET @OrderID = (SELECT OrderID FROM inserted);
+	
+	BEGIN TRAN
+		BEGIN TRY
+			SET @ProductID = (SELECT TOP 1 ProductID FROM Products ORDER BY NEWID()) 
+			SET @UnitPrice = (SELECT UnitPrice FROM Products WHERE ProductID = @ProductID)
+			SET @Quantity = 1
+			SET @Discount = 0
+			SET @Mensaje = 'Datos Insertados Correctamente en la tabla Order Details'
+			INSERT INTO [Order Details] VALUES (@OrderID,@ProductID,@UnitPrice,@Quantity,@Discount)
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la transaccion : '
+			PRINT @Mensaje
+			SELECT ERROR_MESSAGE() as ErrorMessage
+		END CATCH
+GO
+
+/*
+DROP PROC IF EXISTS sp_Insert_Orders_OrderDetails
+GO
+CREATE PROC sp_Insert_Orders_OrderDetails
+@CustomerID nchar(5),
+@EmployeeID int,
+@OrderDate datetime,
+@RequiredDate datetime,
+@ShippedDate datetime,
+@ShipVia int,
+@Freight money,
+@ShipName nvarchar(40),
+@ShipAddress nvarchar(60),
+@ShipCity nvarchar(15),
+@ShipRegion nvarchar(15),
+@ShipPostalCode nvarchar(10),
+@ShipCountry nvarchar(15),
+@ProductID int
+AS
+	DECLARE @Mensaje nvarchar(100)
+	DECLARE @OrderID int
+	DECLARE @UnitPrice money
+	DECLARE @Quantity smallint
+	DECLARE @Discount real
+	SET NOCOUNT ON;
+	IF(@ProductID is null or @ProductID = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @ProductID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Insertados Correctamente'
+			INSERT INTO Orders (CustomerID,EmployeeID,OrderDate,RequiredDate,ShippedDate,ShipVia,Freight,ShipName,ShipAddress,ShipCity,ShipRegion,ShipPostalCode,ShipCountry)
+			VALUES (@CustomerID,@EmployeeID,@OrderDate,@RequiredDate,@ShippedDate,@ShipVia,@Freight,@ShipName,@ShipAddress,@ShipCity,@ShipRegion,@ShipPostalCode,@ShipCountry)
+			PRINT @Mensaje
+
+			SET @Mensaje = 'Datos Insertados Correctamente en la tabla Order Details'
+			
+			SET @OrderID = (SELECT MAX(OrderID) FROM Orders)
+			SET @UnitPrice = (SELECT UnitPrice FROM Products WHERE ProductID = @ProductID)
+			SET @Quantity = 2
+			SET @Discount = 0
+			INSERT INTO [Order Details] VALUES (@OrderID,@ProductID,@UnitPrice,@Quantity,@Discount)
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as [Error Message],
+				ERROR_NUMBER() as Number
+		END CATCH
+GO
+
+*/
+
+DROP PROC IF EXISTS sp_Update_OrderDetails
+GO
+CREATE PROC sp_Update_OrderDetails
+@OrderID int,
+@ProductID int,
+@UnitPrice money,
+@Quantity smallint,
+@Discount real
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@OrderID is null or @OrderID = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @OrderID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@ProductID is null or @ProductID = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @ProductID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@UnitPrice is null or @UnitPrice = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @UnitPrice, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@Quantity is null or @Quantity = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @Quantity, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@Discount is null or @Discount = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @Discount, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Actualizados Correctamente'
+			UPDATE [Order Details] SET 
+				[UnitPrice] = @UnitPrice,
+				[Quantity] = @Quantity,
+				[Discount] = @Discount
+				WHERE [OrderID] = @OrderID AND [ProductID] = @ProductID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as [Message],
+				ERROR_NUMBER() as Number
+		END CATCH
+
+
+GO
+
+
+DROP PROC IF EXISTS sp_Delete_OrderDetails
+GO
+CREATE PROC sp_Delete_OrderDetails
+@OrderID int,
+@ProductID int
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@OrderID is null or @OrderID = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @OrderID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@ProductID is null or @ProductID = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @ProductID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SET @Mensaje = 'Datos Eliminados Correctamente'
+			DELETE FROM [Order Details] WHERE [OrderID] = @OrderID AND [ProductID] = @ProductID
+			PRINT @Mensaje
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as [Message],
+				ERROR_NUMBER() as Number
+		END CATCH
+
+
+GO
+
+DROP PROC IF EXISTS sp_SelectWhereID_OrderDetails
+GO
+CREATE PROC sp_SelectWhereID_OrderDetails
+@OrderID int,
+@ProductID int
+AS
+	SET NOCOUNT ON;
+	DECLARE @Mensaje nvarchar(100)
+	IF(@OrderID is null or @OrderID = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @OrderID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	IF(@ProductID is null or @ProductID = 0)
+	BEGIN
+		SET @Mensaje = 'Error en la variable @ProductID, fuera de rango o nulo.'
+		PRINT @Mensaje
+		RETURN
+	END
+	BEGIN TRAN
+		BEGIN TRY
+			SELECT TOP 100 o.* FROM [Order Details] o WHERE [OrderID] = @OrderID AND [ProductID] = @ProductID
+			COMMIT TRAN
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRAN
+			SET @Mensaje = 'Error en la Transaccion : '
+			PRINT @Mensaje
+			SELECT 
+				ERROR_LINE() as Line,
+				ERROR_MESSAGE() as [Message],
+				ERROR_NUMBER() as Number
+		END CATCH
+
+
+GO
+
+DROP VIEW IF EXISTS vp_Select_OrderDetails
+GO
+CREATE VIEW vp_Select_OrderDetails
+AS
+	SELECT TOP 100 o.* FROM [Order Details] o 
+GO
 
 /*Realizar el CRUD de cada tabla dentro de las secciones correcpondientes*/
 
