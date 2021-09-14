@@ -550,6 +550,172 @@ go
 
 
 -----------------------------------Seccion EmployeeTerritories-----------------------------------------------
+DROP PROC IF EXISTS sp_insert_EmpTerritories
+go
+CREATE PROC sp_insert_EmpTerritories
+@EmployeeID int,
+@TerritoryID nvarchar(20)
+AS
+		
+		SET NOCOUNT ON;
+		DECLARE @resultado nvarchar(50)
+		IF @EmployeeID is null or Len(@EmployeeID)=0
+		BEGIN
+			SET @resultado = 'ERROR: variable @EmployeeID, fuera de rango o nulo'
+			print @resultado
+			Return
+		END
+
+		IF @TerritoryID is null or len(@TerritoryID)=0
+		BEGIN
+			SET @resultado='ERROR: variable @TerritoryID, fuera de rango o nulo'
+			print @resultado
+			return
+		END
+
+			Begin Try
+				Begin tran
+					INSERT INTO EmployeeTerritories(EmployeeID,TerritoryID)
+					VALUES(@EmployeeID,@TerritoryID)
+					SET @resultado ='Datos Insertados'
+					Print @resultado
+				commit Tran;
+			End Try
+			Begin Catch
+				Rollback tran
+				Set @resultado = 'Error en la Transaccion'
+				Print @resultado
+				Select
+					ERROR_MESSAGE() as ErrorMessage,
+					ERROR_PROCEDURE() as ErrorProcedure
+			End catch
+go
+
+DROP PROC IF EXISTS sp_insert_EmpTerritories
+GO
+CREATE PROC sp_insert_EmpTerritories
+@EmployeeID int,
+@TerritoryID nvarchar(20)
+AS
+	SET NOCOUNT ON
+	DECLARE @resultado nvarchar(50)
+	if @EmployeeID is null or Len(@EmployeeID)=0
+	Begin
+		SET @resultado='ERROR: variable @EmployeeID, fuera de rango o nulo'
+		Print @resultado
+		return
+	End
+	if @TerritoryID is null or Len(@TerritoryID)=0
+	Begin
+		Set @resultado='ERROR: variable @TerritoryID, fuera de rango o nulo'
+		Print @resultado
+		return
+	End
+	Begin Try
+		Begin Tran
+			UPDATE EmployeeTerritories 
+				Set EmployeeID = @EmployeeID,
+					TerritoryID = @TerritoryID
+				Where EmployeeID = @EmployeeID and TerritoryID=@TerritoryID
+			SET @resultado='Datos Actualizados'
+			print @resultado
+		Commit Tran
+	End Try
+
+	Begin Catch
+		Rollback Tran
+		Set @resultado ='Error en la Transaccion'
+		Print @resultado
+		Select Error_Message() as ErrorMessage
+
+	End Catch
+go
+
+
+DROP PROC IF EXISTS sp_delete_EmpTerritories
+Go
+CREATE PROC sp_sp_delete_EmpTerritories
+@EmployeeID int,
+@TerritoryID nvarchar(20)
+AS
+	SET NOCOUNT ON
+	DECLARE @resultado nvarchar(50)
+	If @EmployeeID is null or Len(@EmployeeID)=0
+	Begin
+		Set @resultado = 'ERROR: variable @EmployeeID, fuera de rango o nulo'
+		print @resultado
+		return
+	end
+	if @TerritoryID is null or Len(@TerritoryID)=0
+	Begin 
+		Set @resultado = 'ERROR: variable @TerritoryID, fuera de rango o nulo'
+		Print @resultado
+		return
+	end
+
+	Begin try
+		begin tran
+			Delete From EmployeeTerritories where @EmployeeID=EmployeeID and @TerritoryID = TerritoryID
+			Set @resultado = 'Datos Eliminados'
+			Print @resultado
+		Commit Tran
+	End Try
+
+	Begin catch
+		Rollback Tran
+			Set @resultado = 'Error en la Transaccion'
+			Print  @resultado
+
+			Select 
+				ERROR_MESSAGE() as ErrorMessage,
+				ERROR_LINE() as ErrorLine
+	End catch
+go
+
+DROP PROC IF EXISTS sp_select_IdEmpTerritories
+GO
+CREATE PROC sp_sp_select_IdEmpTerritories
+@EmployeeID int,
+@TerritoryID nvarchar(20)
+AS
+	SET NOCOUNT ON
+	DECLARE @resultado nvarchar(50)
+	If @EmployeeID is null or Len(@EmployeeID)=0
+	Begin
+		Set @resultado='ERROR: variable @EmployeeID, fuera de rango o nulo'
+		print @resultado
+		Return
+	End
+	If @TerritoryID is null or Len(@TerritoryID)=0
+	Begin 
+		Set @resultado='ERROR: variable @TerritoryID, fuera de rango o nulo'
+		Print @resultado
+		Return
+	End
+
+	Begin Try
+		Begin tran
+			Select * from EmployeeTerritories where EmployeeID=@EmployeeID and TerritoryID=@TerritoryID
+		Commit Tran
+	End Try
+	Begin catch
+		RollBack Tran
+		Set @resultado ='Error en la Transaccion'
+		Print @resultado
+		Select
+			ERROR_MESSAGE() as ErrorMessage,
+			ERROR_LINE() as ErrorLine
+	end catch
+go
+
+DROP VIEW IF EXISTS dv_Select_EmpTerritories
+GO
+CREATE VIEW dv_Select_EmpTerritories
+AS
+		SELECT * FROM EmployeeTerritories
+GO
+
+
 -----------------------------------Seccion Customers-----------------------------------------------
 
 DROP PROC IF EXISTS sp_Insert_Customers 
@@ -708,7 +874,7 @@ AS
 	SELECT TOP 100 c.* FROM Customers c
 GO
 
------------------------------------Sección CustomerCustomerDemo-----------------------------------------------
+-----------------------------------SecciÃ³n CustomerCustomerDemo-----------------------------------------------
 
 DROP PROC IF EXISTS sp_Insert_CustomerCustomerDemo
 GO
@@ -847,7 +1013,7 @@ AS
 			FROM CustomerCustomerDemo d
 	
 GO
------------------------------------Sección CustomerDemographic-----------------------------------------------
+-----------------------------------SecciÃ³n CustomerDemographic-----------------------------------------------
 
 DROP PROC IF EXISTS sp_Insert_CustomerDemographics
 GO
@@ -981,7 +1147,7 @@ AS
 GO
 
 
------------------------------------Sección Suppliers-----------------------------------------------
+-----------------------------------SecciÃ³n Suppliers-----------------------------------------------
 
 DROP PROC IF EXISTS sp_Insert_Suppliers
 GO
