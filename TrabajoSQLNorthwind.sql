@@ -391,6 +391,306 @@ GO
 
 
 -----------------------------------Seccion Orders-----------------------------------------------
+DROP PROC IF EXISTS sp_insert_orders
+go
+CREATE PROC sp_insert_orders
+@OrderID int,
+@CustomerID nchar(5) ,
+@EmployeeID int,
+@OrderDate datetime ,
+@RequireDate datetime,
+@ShippedDate datetime,
+@ShipVia int,
+@Freight money,
+@ShipName nvarchar(40),
+@ShipAddress nvarchar(60),
+@ShipCity nvarchar(15),
+@ShipRegion nvarchar(15),
+@ShipPostalCode nvarchar(10),
+@ShipCountry nvarchar(15)
+
+
+AS
+
+		SET NOCOUNT ON;
+		Declare @resultado nvarchar(50)
+		If @OrderID is null or @OrderID=0
+		Begin
+			set @resultado='Error: variable @OrderID, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		if @CustomerID is null or len(@CustomerID)=0
+		begin
+			set @resultado ='Error: variable @CustomerID, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		if @EmployeeID is null or Len(@EmployeeID)=0 or @EmployeeID<10
+		Begin
+			Set @resultado='Error: variable @EmployeeID, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+
+		if @ShipName is null or len(@ShipName)=0
+		begin
+			set @resultado = 'Error: variable @ShipName, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		if @Freight is null
+		begin 
+			SET @resultado ='Error: variable @Freight, fuera de rango o nulo'
+			Print @resultado
+			return
+		end
+		if @ShipAddress is null or Len(@ShipAddress)=0
+		begin
+			set @resultado='Error: variable @ShipAddress, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		if @ShipCity is null or Len(@ShipCity)=0
+		begin
+			set @resultado='Error: variable @ShipCity, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		if @ShipPostalCode is null
+		Begin
+			set @resultado='Error: variable @ShipPostalCode, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		if @ShipCountry is null or Len(@ShipCountry)=0
+		begin
+			Set @resultado='Error: variable @ShipCountry, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+
+	BEGIN TRY
+		Begin tran
+			INSERT INTO Orders(OrderDate,RequiredDate,ShippedDate,ShipVia,Freight,ShipName,ShipAddress,ShipCity,
+			ShipRegion,ShipPostalCode,ShipCountry)
+
+			VALUES
+			(@OrderDate,@RequireDate,@ShippedDate,@ShipVia,@Freight,@ShipName,@ShipAddress,@ShipCity,
+			@ShipRegion,@ShipPostalCode,@ShipCountry)
+			set @resultado = 'Registro insertado'
+			print @resultado
+		commit tran
+	END TRY
+	Begin catch
+		Rollback Tran
+			Set @resultado = 'Error en la Transaccion'
+			Print @resultado
+			select 
+				ERROR_MESSAGE() as ErrorMessage,
+				ERROR_PROCEDURE() as ErrorProcedure,
+				ERROR_NUMBER() as ErrorNumber,
+				ERROR_STATE() as ErrorState
+			
+	end catch
+go
+
+DROP PROC IF EXISTS sp_update_orders
+go
+CREATE PROC sp_update_orders
+	@OrderID int ,
+	@CustomerID nchar(5),
+	@EmployeeID int,
+	@OrderDate datetime ,
+	@RequiredDate datetime,
+	@ShippedDate datetime,
+	@ShipVia int,
+	@Freight money,
+	@ShipName nvarchar(40),
+	@ShipAddress nvarchar(60),
+	@ShipCity nvarchar(15),
+	@ShipRegion nvarchar(15),
+	@ShipPostalCode nvarchar(10),
+	@ShipCountry nvarchar(15)
+
+
+as
+
+		SET NOCOUNT ON;
+		Declare @resultado nvarchar(50)
+		If @OrderID is null or @OrderID=0
+		Begin
+			set @resultado='Error: variable @OrderID, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		if @CustomerID is null or len(@CustomerID)=0
+		begin
+			set @resultado ='Error: variable @CustomerID, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		if @EmployeeID is null or Len(@EmployeeID)=0 or @EmployeeID<10
+		Begin
+			Set @resultado='Error: variable @EmployeeID, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+
+		if @ShipName is null or len(@ShipName)=0
+		begin
+			set @resultado = 'Error: variable @ShipName, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		if @Freight is null
+		begin 
+			SET @resultado ='Error: variable @Freight, fuera de rango o nulo'
+			Print @resultado
+			return
+		end
+		if @ShipAddress is null or Len(@ShipAddress)=0
+		begin
+			set @resultado='Error: variable @ShipAddress, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		if @ShipCity is null or Len(@ShipCity)=0
+		begin
+			set @resultado='Error: variable @ShipCity, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		if @ShipPostalCode is null
+		Begin
+			set @resultado='Error: variable @ShipPostalCode, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		if @ShipCountry is null or Len(@ShipCountry)=0
+		begin
+			Set @resultado='Error: variable @ShipCountry, fuera de rango o nulo'
+			print @resultado
+			return
+		end
+		
+		Begin TRY
+			begin tran
+				
+				UPDATE Orders
+				SET 
+					OrderID = @OrderID ,
+					CustomerID = @CustomerID ,
+					EmployeeID = @EmployeeID,
+					OrderDate = @OrderDate,
+					RequiredDate = @RequiredDate,
+					ShippedDate = @ShippedDate,
+					ShipVia = @ShipVia ,
+					Freight = @Freight ,
+					ShipName = @ShipName ,
+					ShipAddress = @ShipAddress  ,
+					ShipCity = @ShipCity ,
+					ShipRegion = @ShipRegion,
+					ShipPostalCode = @ShipPostalCode ,
+					ShipCountry = @ShipCountry
+				WHERE OrderID = @OrderID
+				SET @resultado='Datos Actualizados '
+				print @mensaje
+			commit tran;
+		end try
+		begin catch
+			Rollback tran
+				set	@resultado = 'Error en la Transaccion'
+				print @resultado
+				Select 
+					ERROR_MESSAGE() as ErrorMessage,
+					ERROR_PROCEDURE() as ErrorProcedure,
+					ERROR_NUMBER() as ErrorNumber,
+					ERROR_STATE() as ErrorStatee
+
+		end catch
+			
+go
+
+DROP PROC IF EXISTS  sp_delete_orders
+go
+CREATE PROC sp_delete_orders
+@OrderID int
+
+as
+
+	
+	SET NOCOUNT ON;
+	Declare @resultado nvarchar(60)
+	if @OrderID is null or Len(@OrderID)=0
+	Begin
+		set @resultado = 'Error: Variable @OrderID, fuera de rango o nulo'
+		print @resultado
+		return
+	End
+
+	´Begin Try
+		Begin tran
+			DELETE FROM Orders WHERE OrderID = @OrderID
+			Set @resultado = 'Datos Eliminados'
+			print @resultado
+		Commit tran
+	end try
+	Begin catch
+		rollback tran
+			set @resultado = 'Error en la transaccion'
+			print @resultado
+			Select 
+				ERROR_MESSAGE() as ErrorMessage,
+				ERROR_PROCEDURE() as ErrorProcedure,
+				ERROR_NUMBER() as ErrorNumber,
+				ERROR_STATE() as ErrorState
+	end catch
+go
+
+DROP PROC IF EXISTS sp_Select_IdOrders
+Go
+CREATE PROC sp_Select_IdOrders
+@OrderID int
+
+as 
+	SET NOCOUNT ON;
+	DECLARE  @resultado nvarchar(50)
+	if @OrderID is null or Len(@OrderID)=0
+	Begin
+		set @resultado = 'Error: Variable @OrderID, fuera de rango o nulo'
+		print @resultado
+		return
+	End
+
+	Begin Try 
+		Begin tran
+			Select * from Orders Where OrderID = @OrderID
+		Commit tran
+	end try
+
+	Begin catch
+		SET @resultado = 'Error en la transaccion'
+		print @resultado
+		Select 
+				ERROR_MESSAGE() as ErrorMessage,
+				ERROR_PROCEDURE() as ErrorProcedure,
+				ERROR_NUMBER() as ErrorNumber,
+				ERROR_STATE() as ErrorState
+	end catch
+go
+
+
+DROP VIEW IF EXISTS dp_Select_Order
+GO
+
+CREATE VIEW dp_Select_Order
+AS
+	Select * FROM Orders
+GO
+
+
+
 -----------------------------------Seccion Shippers-----------------------------------------------
 DROP PROC IF EXISTS sp_insert_shippers
 go
